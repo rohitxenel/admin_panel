@@ -1,334 +1,526 @@
-'use client'
-import { useState, useEffect } from 'react';
-import { 
-  FiPackage, 
-  FiTruck, 
-  FiUsers, 
-  FiDollarSign, 
-  FiMap, 
-  FiClock,
-  FiAlertCircle,
-  FiTrendingUp,
-  FiCalendar,
-  FiSearch
-} from 'react-icons/fi';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+'use client';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+  FiPlus, FiLoader, FiEdit2, FiTrash2, FiToggleLeft, FiToggleRight,
+  FiX, FiSave, FiAlertTriangle, FiRefreshCw
+} from 'react-icons/fi';
+import { GetAllVehicleData, AddNewVehicle, EditVehiclePrice, DeleteVehicleType, ChangeStatusAccountType } from '@/services/admincontrol';
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+function formatDateTime(iso) {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  let h = d.getHours();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const hh = String(h).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}-${mm}-${yyyy} ${hh}:${min} ${ampm}`;
+}
 
-export default function RiderAdminDashboard() {
-  const [timeFilter, setTimeFilter] = useState('week');
-  const [ridersData, setRidersData] = useState([]);
-  const [ordersData, setOrdersData] = useState([]);
+async function GetVehicleData() {
+  const res = await GetAllVehicleData();
+  if (res?.statusCode === 200 && res?.status) return res?.data?.data || [];
+  return [];
+}
 
-  // Dummy data for demonstration
-  useEffect(() => {
-    // Simulate API call for riders
-    const riders = [
-      { id: 1, name: 'Rajesh Kumar', status: 'active', deliveries: 42, rating: 4.8, vehicle: 'BASIC', earnings: 12500 },
-      { id: 2, name: 'Suresh Patel', status: 'active', deliveries: 38, rating: 4.7, vehicle: 'LEXURUY', earnings: 11200 },
-      { id: 3, name: 'Amit Sharma', status: 'inactive', deliveries: 25, rating: 4.5, vehicle: 'Bike', earnings: 8500 },
-      { id: 4, name: 'Vijay Singh', status: 'active', deliveries: 31, rating: 4.6, vehicle: 'Scooter', earnings: 9800 },
-      { id: 5, name: 'Deepak Yadav', status: 'busy', deliveries: 29, rating: 4.4, vehicle: 'Bike', earnings: 9200 },
-    ];
+async function AddVehicleType(payload) {
+  console.log("add vehicle" , payload)
+  return await AddNewVehicle(payload);
+}
+async function EditVehiclePrices(id, payload) {
+  return await EditVehiclePrice({ id, ...payload });
+}
+async function deleteVehicleType(id) {
+  return await DeleteVehicleType(id);
+}
+async function apiToggleBankTypeStatus(id, status) {
+  return await ChangeStatusAccountType(id, status);
+}
 
-    // Simulate API call for orders
-    const orders = [
-      { id: 1001, customer: 'Aarav Mehta', rider: 'Rajesh Kumar', status: 'delivered', time: '15 mins', amount: 450 },
-      { id: 1002, customer: 'Neha Gupta', rider: 'Suresh Patel', status: 'in-progress', time: '25 mins', amount: 320 },
-      { id: 1003, customer: 'Priya Singh', rider: null, status: 'pending', time: 'Waiting', amount: 610 },
-      { id: 1004, customer: 'Rahul Verma', rider: 'Vijay Singh', status: 'delivered', time: '18 mins', amount: 290 },
-      { id: 1005, customer: 'Sanjay Malhotra', rider: 'Deepak Yadav', status: 'in-progress', time: '32 mins', amount: 540 },
-    ];
+async function runApi(fn, { onErrorMessage = 'Something went wrong.' } = {}) {
+  try {
+    return await fn();
+  } catch (err) {
+    const message = err?.response?.data?.message || err?.message || onErrorMessage;
+    throw new Error(message);
+  }
+}
 
-    setRidersData(riders);
-    setOrdersData(orders);
-  }, []);
+function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
+        <div className="p-4 border-b">
+          <h3 className="font-semibold">{title}</h3>
+        </div>
+        <div className="p-4 text-gray-700">{message}</div>
+        <div className="p-4 border-t flex justify-end gap-2">
+          <button onClick={onCancel} className="px-3 py-2 border rounded-lg hover:bg-gray-50">
+            <FiX className="inline mr-1" /> Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? <FiLoader className="inline mr-1 animate-spin" /> : <FiSave className="inline mr-1" />}
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  // Stats data
-  const stats = [
-    {
-      title: 'Total Rides',
-      value: '7680',
-      change: '+5%',
-      icon: <FiTruck className="h-6 w-6" />,
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'Active Rides',
-      value: '27',
-      change: '+12%',
-      icon: <FiPackage className="h-6 w-6" />,
-      color: 'bg-green-500'
-    },
-    {
-      title: 'Completed Today',
-      value: '132',
-      change: '+8%',
-      icon: <FiTruck className="h-6 w-6" />,
-      color: 'bg-purple-500'
-    },
-    {
-      title: 'Total Revenue',
-      value: '42,580',
-      change: '+15%',
-      icon: <FiDollarSign className="h-6 w-6" />,
-      color: 'bg-amber-500'
-    }
-  ];
+function ErrorPanel({ message, onRetry }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-center justify-between gap-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mb-3">
+      <div className="flex items-center gap-2">
+        <FiAlertTriangle /> <span className="text-sm">{message}</span>
+      </div>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center gap-1 text-sm px-2 py-1 rounded border border-red-300 hover:bg-red-100"
+        >
+          <FiRefreshCw className="w-4 h-4" /> Retry
+        </button>
+      )}
+    </div>
+  );
+}
 
-  // Chart data for deliveries
-  const deliveryChartData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [
-      {
-        label: 'Completed Deliveries',
-        data: [120, 150, 180, 90, 130, 200, 170],
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 2,
-        tension: 0.4,
-      },
-      {
-        label: 'Failed Deliveries',
-        data: [10, 15, 8, 20, 12, 5, 8],
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 2,
-        tension: 0.4,
-      },
-    ],
-  };
+function Toaster({ toasts, onClose }) {
+  return (
+    <div className="fixed top-4 right-4 z-[60] space-y-3">
+      {toasts.map(t => (
+        <div
+          key={t.id}
+          className={`min-w-[260px] max-w-[360px] rounded-lg shadow-lg px-4 py-3 text-sm
+                      ${t.type === 'error'
+            ? 'bg-rose-50 border border-rose-200 text-rose-700'
+            : 'bg-emerald-50 border border-emerald-200 text-emerald-700'}`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5">
+              {t.type === 'error' ? <FiAlertTriangle /> : <FiSave />}
+            </div>
+            <div className="flex-1 leading-5">{t.message}</div>
+            <button
+              onClick={() => onClose(t.id)}
+              className="text-gray-500 hover:text-gray-700 -mr-1 -mt-1 p-1"
+              aria-label="Close"
+            >
+              <FiX />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-  // Chart data for rider performance
-  const performanceChartData = {
-    labels: ['Michael', 'James', 'William', 'David', 'John'],
-    datasets: [
-      {
-        label: 'Deliveries',
-        data: [42, 38, 25, 31, 29],
-        backgroundColor: [
-          'rgba(54, 162, 235, 0.7)',
-          'rgba(75, 192, 192, 0.7)',
-          'rgba(153, 102, 255, 0.7)',
-          'rgba(255, 159, 64, 0.7)',
-          'rgba(255, 99, 132, 0.7)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+function VehicleFormModal({ open, mode, value, onChange, onClose, onSubmit, loading }) {
+  if (!open) return null;
 
-  // Chart options
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
+  const setField = (k, v) => onChange({ ...value, [k]: v });
+
+  const onlyLetters = (s) => s.replace(/[^a-zA-Z\s-]/g, '');
+  const numSanitize = (s) =>
+    s.replace(/[^\d.]/g, '')
+     .replace(/(\..*)\./g, '$1'); // single decimal
+
+  const isValidName = value.VehicalType?.trim().length >= 2;
+  const isValidNumber = (n) => n !== '' && !Number.isNaN(Number(n));
+  const formValid =
+    isValidName &&
+    ['baseprice', 'timeprice', 'distaceprice', 'plateformfees', 'cancelprice']
+      .every(k => isValidNumber(value[k]));
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Rider Management Dashboard</h1>
-        <p className="text-gray-600">Monitor and manage your delivery fleet performance</p>
-      </div>
-
-      {/* Time Filter */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <select 
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
-            >
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-            </select>
-          </div>
-        </div>
-        <div className="relative">
-          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search riders, orders..." 
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64"
-          />
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">{stat.value}</p>
-                <p className="text-sm text-green-500 mt-1 flex items-center">
-                  <FiTrendingUp className="mr-1" /> {stat.change}
-                </p>
-              </div>
-              <div className={`p-3 rounded-lg ${stat.color} text-white`}>
-                {stat.icon}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Delivery Trends Chart */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Delivery Trends</h2>
-          <div className="h-80">
-            <Line data={deliveryChartData} options={chartOptions} />
-          </div>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl">
+        <div className="p-4 border-b">
+          <h3 className="font-semibold">{mode === 'add' ? 'Add Vehicle' : 'Edit Vehicle'}</h3>
         </div>
 
-        {/* Rider Performance Chart */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Top Rider Performance</h2>
-          <div className="h-80">
-            <Bar data={performanceChartData} options={chartOptions} />
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-medium text-gray-600">Vehicle Type</label>
+            <input
+              value={value.VehicalType}
+              onChange={(e) => setField('VehicalType', onlyLetters(e.target.value))}
+              placeholder="e.g., Mini, Sedan"
+              className="w-full border rounded-lg px-3 py-2"
+            />
+            <p className="text-[11px] text-gray-500 mt-1">Letters, spaces, hyphen only.</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-600">Base Price</label>
+            <input
+              value={value.baseprice}
+              onChange={(e) => setField('baseprice', numSanitize(e.target.value))}
+              inputMode="decimal"
+              placeholder="0"
+              className="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-600">Time Price</label>
+            <input
+              value={value.timeprice}
+              onChange={(e) => setField('timeprice', numSanitize(e.target.value))}
+              inputMode="decimal"
+              placeholder="0"
+              className="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-600">Distance Price</label>
+            <input
+              value={value.distaceprice}
+              onChange={(e) => setField('distaceprice', numSanitize(e.target.value))}
+              inputMode="decimal"
+              placeholder="0"
+              className="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-600">Platform Fees (%)</label>
+            <input
+              value={value.plateformfees}
+              onChange={(e) => setField('plateformfees', numSanitize(e.target.value))}
+              inputMode="decimal"
+              placeholder="0"
+              className="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-600">Cancel Price</label>
+            <input
+              value={value.cancelprice}
+              onChange={(e) => setField('cancelprice', numSanitize(e.target.value))}
+              inputMode="decimal"
+              placeholder="0"
+              className="w-full border rounded-lg px-3 py-2"
+            />
           </div>
         </div>
-      </div>
 
-      {/* Riders and Orders Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Riders Table */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Riders</h2>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-              View All
-            </button>
+        <div className="p-4 border-t flex justify-end gap-2">
+          <button onClick={onClose} className="px-3 py-2 border rounded-lg hover:bg-gray-50">
+            <FiX className="inline mr-1" /> Cancel
+          </button>
+          <button
+            disabled={loading || !formValid}
+            onClick={onSubmit}
+            className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? <FiLoader className="inline mr-1 animate-spin" /> : <FiSave className="inline mr-1" />}
+            {mode === 'add' ? 'Add' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function BankTypeManagementPage() {
+  const [vehicleData, setVehicleData] = useState([]);
+  const [loadingList, setLoadingList] = useState(true);
+  const [listError, setListError] = useState('');
+
+  const [toasts, setToasts] = useState([]);
+  const pushToast = (message, type = 'error') => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts(prev => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  };
+  const closeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState('add');
+  const emptyForm = {
+    VehicalType: '',
+    baseprice: '',
+    timeprice: '',
+    distaceprice: '',
+    plateformfees: '',
+    cancelprice: '',
+  };
+  const [formData, setFormData] = useState(emptyForm);
+  const [editingItem, setEditingItem] = useState(null);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMeta, setConfirmMeta] = useState({ title: '', message: '' });
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(() => async () => {});
+
+  const loadList = async () => {
+    setLoadingList(true);
+    setListError('');
+    try {
+      const data = await runApi(() => GetVehicleData(), { onErrorMessage: 'Failed to load vehicle types.' });
+      setVehicleData(Array.isArray(data) ? data : data?.data || []);
+    } catch (err) {
+      setListError(err.message);
+      pushToast(err.message, 'error');
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  useEffect(() => { loadList(); }, []);
+
+  const openAdd = () => {
+    setFormMode('add');
+    setFormData(emptyForm);
+    setEditingItem(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (item) => {
+    setFormMode('edit');
+    setEditingItem(item);
+    setFormData({
+      VehicalType: item?.VehicalType || '',
+      baseprice: String(item?.baseprice ?? ''),
+      timeprice: String(item?.timeprice ?? ''),
+      distaceprice: String(item?.distaceprice ?? ''),
+      plateformfees: String(item?.plateformfees ?? ''),
+      cancelprice: String(item?.cancelprice ?? ''),
+    });
+    setFormOpen(true);
+  };
+
+  const askConfirm = ({ title, message, action }) => {
+    setConfirmMeta({ title, message });
+    setConfirmAction(() => action);
+    setConfirmOpen(true);
+  };
+
+  const handleFormSubmit = () => {
+    if (formMode === 'add') {
+      askConfirm({
+        title: 'Confirm Add',
+        message: `Add new vehicle "${formData.VehicalType}"?`,
+        action: async () => {
+          setConfirmLoading(true);
+          try {
+            await runApi(() => AddVehicleType(formData), { onErrorMessage: 'Failed to add vehicle.' });
+            setFormOpen(false);
+            await loadList();
+          } catch (err) {
+            pushToast(err.message, 'error');
+          } finally {
+            setConfirmLoading(false);
+            setConfirmOpen(false);
+          }
+        },
+      });
+    } else {
+      askConfirm({
+        title: 'Confirm Save',
+        message: `Save changes to "${editingItem?.VehicalType}"?`,
+        action: async () => {
+          setConfirmLoading(true);
+          try {
+            await runApi(() => EditVehiclePrices(editingItem._id, formData), { onErrorMessage: 'Failed to update vehicle.' });
+            setFormOpen(false);
+            await loadList();
+          } catch (err) {
+            pushToast(err.message, 'error');
+          } finally {
+            setConfirmLoading(false);
+            setConfirmOpen(false);
+          }
+        },
+      });
+    }
+  };
+
+  const handleDelete = (item) => {
+    askConfirm({
+      title: 'Confirm Delete',
+      message: `Delete vehicle "${item?.VehicalType}"? This cannot be undone.`,
+      action: async () => {
+        setConfirmLoading(true);
+        try {
+          await runApi(() => deleteVehicleType(item._id), { onErrorMessage: 'Failed to delete vehicle.' });
+          await loadList();
+        } catch (err) {
+          pushToast(err.message, 'error');
+        } finally {
+          setConfirmLoading(false);
+          setConfirmOpen(false);
+        }
+      },
+    });
+  };
+
+  const handleToggle = (item) => {
+    const nextStatus = !item?.status;
+    askConfirm({
+      title: 'Confirm Status Change',
+      message: `Change status of "${item?.VehicalType}" to ${nextStatus ? 'Active' : 'Inactive'}?`,
+      action: async () => {
+        setConfirmLoading(true);
+        try {
+          await runApi(() => apiToggleBankTypeStatus(item._id, nextStatus), { onErrorMessage: 'Failed to change status.' });
+          await loadList();
+        } catch (err) {
+          pushToast(err.message, 'error');
+        } finally {
+          setConfirmLoading(false);
+          setConfirmOpen(false);
+        }
+      },
+    });
+  };
+
+  const rows = useMemo(() => vehicleData, [vehicleData]);
+
+  return (
+    <div className="p-4">
+      <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Fare Management</h2>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            <FiPlus /> Add New Vehicle
+          </button>
+        </div>
+
+        <ErrorPanel message={listError} onRetry={loadList} />
+
+        {loadingList ? (
+          <div className="flex justify-center py-12">
+            <FiLoader className="animate-spin h-8 w-8 text-indigo-600" />
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deliveries</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {ridersData.map((rider) => (
-                  <tr key={rider.id}>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                            {rider.name.charAt(0)}
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{rider.name}</div>
-                          <div className="text-sm text-gray-500">{rider.vehicle}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${rider.status === 'active' ? 'bg-green-100 text-green-800' : 
-                          rider.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
-                          'bg-yellow-100 text-yellow-800'}`}>
-                        {rider.status}
+        ) : rows.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">No Vehicles Found</div>
+        ) : (
+          <table className="min-w-full divide-y divide-gray-200 text-sm text-center">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2">S.No.</th>
+                <th className="px-4 py-2">Vehicle Type</th>
+                <th className="px-4 py-2">Base Price</th>
+                <th className="px-4 py-2">Time Price</th>
+                <th className="px-4 py-2">Distance Price</th>
+                <th className="px-4 py-2">PlateFormFees(%)</th>
+                <th className="px-4 py-2">Cancel Price</th>
+                <th className="px-4 py-2">Edit</th>
+                <th className="px-4 py-2">Delete</th>
+                <th className="px-4 py-2">Change Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {rows.map((b, i) => (
+                <tr key={b?._id || b?.id || `${b?.VehicalType}-${i}`}>
+                  <td>{i + 1}</td>
+                  <td className="font-medium">{b?.VehicalType}</td>
+                  <td>{b?.baseprice || 0}</td>
+                  <td>{b?.timeprice || 0}</td>
+                  <td>{b?.distaceprice || 0}</td>
+                  <td>{b?.plateformfees || 0} %</td>
+                  <td>{b?.cancelprice || 0}</td>
+
+                  <td>
+                    <button
+                      onClick={() => openEdit(b)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg 
+                                 bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                      title="Edit"
+                    >
+                      <FiEdit2 className="w-4 h-4" />
+                    </button>
+                  </td>
+
+                  <td>
+                    <button
+                      onClick={() => handleDelete(b)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg 
+                                 bg-red-100 text-red-700 hover:bg-red-200 transition"
+                      title="Delete"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+
+                  <td>
+                    <button
+                      onClick={() => handleToggle(b)}
+                      role="switch"
+                      aria-checked={Boolean(b?.status)}
+                      aria-label={b?.status ? 'Active' : 'Inactive'}
+                      title={b?.status ? 'Active' : 'Inactive'}
+                      className={`relative inline-flex h-7 w-[52px] items-center rounded-full transition-all duration-300
+                        ${b?.status ? 'bg-gradient-to-r from-emerald-500 to-emerald-600'
+                                    : 'bg-gradient-to-r from-rose-500 to-rose-600'}`}
+                    >
+                      <span
+                        className={`absolute inset-y-0 left-0 w-1/2 grid place-items-center text-[10px] font-semibold uppercase
+                          ${b?.status ? 'opacity-100 text-white' : 'opacity-0'}`}
+                      >
+                        ON
                       </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{rider.deliveries}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex items-center">
-                        <span>{rider.rating}</span>
-                        <svg className="w-4 h-4 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Recent Orders Table */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Recent Orders</h2>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-              View All
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {ordersData.map((order) => (
-                  <tr key={order.id}>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : 
-                          order.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 
-                          'bg-yellow-100 text-yellow-800'}`}>
-                        {order.status}
+                      <span
+                        className={`absolute inset-y-0 right-0 w-1/2 grid place-items-center text-[10px] font-semibold uppercase
+                          ${b?.status ? 'opacity-0' : 'opacity-100 text-white'}`}
+                      >
+                        OFF
                       </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{order.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      <span
+                        className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-md flex items-center justify-center
+                          transition-all duration-300 ${b?.status ? 'translate-x-[24px]' : 'translate-x-0'}`}
+                      >
+                        {b?.status ? (
+                          <FiToggleRight className="h-3 w-3 text-emerald-500" />
+                        ) : (
+                          <FiToggleLeft className="h-3 w-3 text-rose-500" />
+                        )}
+                      </span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
+
+      <VehicleFormModal
+        open={formOpen}
+        mode={formMode}
+        value={formData}
+        onChange={setFormData}
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        loading={false}
+      />
+
+      <ConfirmModal
+        open={confirmOpen}
+        title={confirmMeta.title}
+        message={confirmMeta.message}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmAction}
+        loading={confirmLoading}
+      />
+
+      <Toaster toasts={toasts} onClose={closeToast} />
     </div>
   );
 }

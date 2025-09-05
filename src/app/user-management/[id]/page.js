@@ -617,7 +617,7 @@ export default function UserProfilePage() {
                                             <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                                                 <p className="text-sm text-gray-700 mb-1">Avg. Trip Cost</p>
                                                 <p className="text-2xl font-bold text-gray-900">
-                                                    {TripState?.avgTripCost}
+                                                    {(TripState?.avgTripCost).toFixed(2)}
                                                 </p>
                                             </div>
                                         </div>

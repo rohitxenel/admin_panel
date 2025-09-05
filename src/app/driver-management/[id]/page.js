@@ -1320,13 +1320,13 @@ export default function DriverProfilePage() {
 
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-2 gap-4">
-                                                    <div className="bg-gray-50 p-4 rounded-lg text-center">
+                                                    {/* <div className="bg-gray-50 p-4 rounded-lg text-center">
                                                         <FiFileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                                         <p className="text-sm text-gray-600">RC Document</p>
                                                         <button className="mt-2 text-indigo-600 hover:text-indigo-800 text-xs font-medium">
                                                             View Document
                                                         </button>
-                                                    </div>
+                                                    </div> */}
                                                     <div className="bg-gray-50 p-4 rounded-lg text-center">
                                                         <FiFileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                                                         <p className="text-sm text-gray-600">Insurance</p>

@@ -12,7 +12,7 @@ import {
   FiAlertTriangle,
   FiRefreshCw
 } from 'react-icons/fi';
-import { GetBankAccountType, AddBankAccountType } from '@/services/admincontrol';
+import { GetBankAccountType, AddBankAccountType, EditBankAccountType, DeleteBankAccountType, ChangeStatusAccountType } from '@/services/admincontrol';
 
 function formatDateTime(iso) {
   const d = new Date(iso);
@@ -27,7 +27,7 @@ function formatDateTime(iso) {
   return `${dd}-${mm}-${yyyy} ${hh}:${min} ${ampm}`;
 }
 
-// ----- API wrappers (replace others with real services when available) -----
+// ----- API wrappers -----
 async function apiGetAllBankTypes() {
   const res = await GetBankAccountType();
   if (res?.statusCode === 200 && res?.status) {
@@ -37,22 +37,19 @@ async function apiGetAllBankTypes() {
 }
 
 async function apiCreateBankType(name) {
-  // your API expects { bankaccountType }
   return await AddBankAccountType({ bankaccountType: name });
 }
 
-// placeholders; wire your real endpoints here then keep the loadList() refresh below
-async function apiUpdateBankType(id, { name }) {
-  return { _id: id, bankaccountType: name };
+async function apiUpdateBankType(id, name) {
+  return await EditBankAccountType({ id, bankaccountType: name });
 }
 async function apiDeleteBankType(id) {
-  return true;
+  return await DeleteBankAccountType(id);
 }
-async function apiToggleBankTypeStatus(id, isActive) {
-  return { _id: id, isActive };
+async function apiToggleBankTypeStatus(id, status) {
+  return await ChangeStatusAccountType(id, status);
 }
 
-// ------------------ helpers ------------------
 async function runApi(fn, { onErrorMessage = 'Something went wrong.' } = {}) {
   try {
     return await fn();
@@ -147,10 +144,52 @@ function ErrorPanel({ message, onRetry }) {
   );
 }
 
+// 🔔 Tiny toast system (right-side pop)
+function Toaster({ toasts, onClose }) {
+  return (
+    <div className="fixed top-4 right-4 z-[60] space-y-3">
+      {toasts.map(t => (
+        <div
+          key={t.id}
+          className={`min-w-[260px] max-w-[360px] rounded-lg shadow-lg px-4 py-3 text-sm
+                      ${t.type === 'error' ? 'bg-rose-50 border border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border border-emerald-200 text-emerald-700'}`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5">
+              {t.type === 'error' ? <FiAlertTriangle /> : <FiSave />}
+            </div>
+            <div className="flex-1 leading-5">{t.message}</div>
+            <button
+              onClick={() => onClose(t.id)}
+              className="text-gray-500 hover:text-gray-700 -mr-1 -mt-1 p-1"
+              aria-label="Close"
+            >
+              <FiX />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function BankTypeManagementPage() {
   const [bankTypes, setBankTypes] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [listError, setListError] = useState('');
+
+  // Toast state
+  const [toasts, setToasts] = useState([]);
+  const pushToast = (message, type = 'error') => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts(prev => [...prev, { id, type, message }]);
+    // auto-dismiss in 4s
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
+  const closeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
 
   // Modals state
   const [formOpen, setFormOpen] = useState(false);
@@ -161,7 +200,7 @@ export default function BankTypeManagementPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMeta, setConfirmMeta] = useState({ title: '', message: '' });
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [confirmAction, setConfirmAction] = useState(() => async () => {});
+  const [confirmAction, setConfirmAction] = useState(() => async () => { });
 
   // Load list (initial + after every action)
   const loadList = async () => {
@@ -174,6 +213,7 @@ export default function BankTypeManagementPage() {
       setBankTypes(Array.isArray(data) ? data : data?.data || []);
     } catch (err) {
       setListError(err.message);
+      pushToast(err.message, 'error'); // side toast for API error
     } finally {
       setLoadingList(false);
     }
@@ -219,9 +259,9 @@ export default function BankTypeManagementPage() {
               onErrorMessage: 'Failed to add bank type.',
             });
             setFormOpen(false);
-            await loadList(); // refresh from API to ensure unique keys and fresh data
+            await loadList(); // refresh from API
           } catch (err) {
-            alert(err.message);
+            pushToast(err.message, 'error'); // ⬅️ replaced alert
           } finally {
             setConfirmLoading(false);
             setConfirmOpen(false);
@@ -235,14 +275,13 @@ export default function BankTypeManagementPage() {
         action: async () => {
           setConfirmLoading(true);
           try {
-            await runApi(
-              () => apiUpdateBankType(editingItem._id, { name: draftName.trim() }),
-              { onErrorMessage: 'Failed to update bank type.' }
-            );
+            await runApi(() => apiUpdateBankType(editingItem._id, draftName.trim()), {
+              onErrorMessage: 'Failed to update bank type.',
+            });
             setFormOpen(false);
             await loadList(); // refresh
           } catch (err) {
-            alert(err.message);
+            pushToast(err.message, 'error'); // ⬅️ replaced alert
           } finally {
             setConfirmLoading(false);
             setConfirmOpen(false);
@@ -263,7 +302,7 @@ export default function BankTypeManagementPage() {
           await runApi(() => apiDeleteBankType(item._id), { onErrorMessage: 'Failed to delete bank type.' });
           await loadList(); // refresh
         } catch (err) {
-          alert(err.message);
+          pushToast(err.message, 'error'); // ⬅️ replaced alert
         } finally {
           setConfirmLoading(false);
           setConfirmOpen(false);
@@ -274,19 +313,19 @@ export default function BankTypeManagementPage() {
 
   // Toggle status -> refresh
   const handleToggle = (item) => {
-    const next = !item?.isActive;
+    const nextStatus = !item?.status; // flip current
     askConfirm({
       title: 'Confirm Status Change',
-      message: `Change status of "${item?.bankaccountType}"?`,
+      message: `Change status of "${item?.bankaccountType}" to ${nextStatus ? 'Active' : 'Inactive'}?`,
       action: async () => {
         setConfirmLoading(true);
         try {
-          await runApi(() => apiToggleBankTypeStatus(item._id, next), {
+          await runApi(() => apiToggleBankTypeStatus(item._id, nextStatus), {
             onErrorMessage: 'Failed to change status.',
           });
-          await loadList(); // refresh
+          await loadList(); // ✅ refresh list every time
         } catch (err) {
-          alert(err.message);
+          pushToast(err.message, 'error');
         } finally {
           setConfirmLoading(false);
           setConfirmOpen(false);
@@ -294,6 +333,7 @@ export default function BankTypeManagementPage() {
       },
     });
   };
+
 
   const rows = useMemo(() => bankTypes, [bankTypes]);
 
@@ -346,7 +386,7 @@ export default function BankTypeManagementPage() {
                                  bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
                       title="Edit"
                     >
-                      <FiEdit2 className="w-4 h-4" /> Edit
+                      <FiEdit2 className="w-4 h-4" />
                     </button>
                   </td>
 
@@ -358,21 +398,51 @@ export default function BankTypeManagementPage() {
                                  bg-red-100 text-red-700 hover:bg-red-200 transition"
                       title="Delete"
                     >
-                      <FiTrash2 className="w-4 h-4" /> Delete
+                      <FiTrash2 className="w-4 h-4" />
                     </button>
                   </td>
 
-                  {/* Toggle Status (no text, color-only as requested) */}
-                  <td>
-                    <button
-                      onClick={() => handleToggle(b)}
-                      className={`inline-flex items-center justify-center w-24 px-3 py-1.5 text-sm font-medium rounded-full transition
-                        ${b?.isActive ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600 text-white hover:bg-red-700'}`}
-                      title="Toggle Status"
+                  {/* Toggle Status (color-only switch) */}
+                  <button
+                    onClick={() => handleToggle(b)}
+                    role="switch"
+                    aria-checked={Boolean(b?.status)}
+                    aria-label={b?.status ? 'Active' : 'Inactive'}
+                    title={b?.status ? 'Active' : 'Inactive'}
+                    className={`relative inline-flex h-7 w-[52px] items-center rounded-full transition-all duration-300
+              ${b?.status
+                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600'
+                        : 'bg-gradient-to-r from-rose-500 to-rose-600'}`}
+                  >
+                    {/* ON label */}
+                    <span
+                      className={`absolute inset-y-0 left-0 w-1/2 grid place-items-center text-[10px] font-semibold uppercase
+                ${b?.status ? 'opacity-100 text-white' : 'opacity-0'}`}
                     >
-                      {b?.isActive ? <FiToggleRight className="w-5 h-5" /> : <FiToggleLeft className="w-5 h-5" />}
-                    </button>
-                  </td>
+                      ON
+                    </span>
+                    {/* OFF label */}
+                    <span
+                      className={`absolute inset-y-0 right-0 w-1/2 grid place-items-center text-[10px] font-semibold uppercase
+                ${b?.status ? 'opacity-0' : 'opacity-100 text-white'}`}
+                    >
+                      OFF
+                    </span>
+
+                    {/* Thumb */}
+                    <span
+                      className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-md flex items-center justify-center
+                transition-all duration-300
+                ${b?.status ? 'translate-x-[24px]' : 'translate-x-0'}`}
+                    >
+                      {b?.status ? (
+                        <FiToggleRight className="h-3 w-3 text-emerald-500" />
+                      ) : (
+                        <FiToggleLeft className="h-3 w-3 text-rose-500" />
+                      )}
+                    </span>
+                  </button>
+
                 </tr>
               ))}
             </tbody>
@@ -400,6 +470,9 @@ export default function BankTypeManagementPage() {
         onConfirm={confirmAction}
         loading={confirmLoading}
       />
+
+      {/* Right-side toasts */}
+      <Toaster toasts={toasts} onClose={closeToast} />
     </div>
   );
 }
