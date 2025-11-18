@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+@keyframes fade {
+  0% { opacity: 0; transform: translateY(5px); }
+  50% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-5px); }
+}
+
+.animate-fade {
+  animation: fade 3s ease-in-out infinite;
+}
+
+
+.floating-shape {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 9999px;
+  animation: float 12s ease-in-out infinite;
+  filter: blur(40px);
+  top: 50%;
+  left: 50%;
+}
+
+@keyframes float {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  50%  { transform: translate(-60%, -55%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+

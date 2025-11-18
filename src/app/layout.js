@@ -6,7 +6,8 @@ export const metadata = {
   title: "RideXtra Admin",
   description: "Best app ever 🚀",
   icons: {
-    icon: "/Nas-Logo.svg", // <-- place your custom favicon in /public/myicon.png
+   // icon: "/Nas-Logo.svg", // <-- place your custom favicon in /public/myicon.png
+      icon: "company_logo.png",
   },
 };
 export default function RootLayout({ children }) {
