@@ -3,11 +3,11 @@ import { AuthProvider } from '@/context/AuthContext';
 
 
 export const metadata = {
-  title: "RideXtra Admin",
+  title: "G&R Control Hub",
   description: "Best app ever 🚀",
   icons: {
    // icon: "/Nas-Logo.svg", // <-- place your custom favicon in /public/myicon.png
-      icon: "company_logo.png",
+     icon: "top_logo.png",
   },
 };
 export default function RootLayout({ children }) {
