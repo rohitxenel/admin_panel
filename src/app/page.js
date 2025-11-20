@@ -55,7 +55,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
+    console.log("fkjhdhfh==============")
     try {
       if (!email || !password) {
         setError('Email and password are required');
