@@ -52,10 +52,10 @@ export default function LoginPage() {
   
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault();//dont refresh the page 
+    setIsLoading(true);//show the loading spinner the buttons becomes disabled while lo
     setError('');
-    console.log("fkjhdhfh==============")
+
     try {
       if (!email || !password) {
         setError('Email and password are required');
@@ -69,6 +69,7 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
 
   // --- SLOGAN ANIMATION LOGIC ---
   const [currentSlogan, setCurrentSlogan] = useState(0);
@@ -103,7 +104,7 @@ export default function LoginPage() {
         {/* New CSS Pattern Background */}
          <div className="absolute inset-0 z-0 opacity-10 bg-repeat bg-cross-lines"></div>
 
-        <div className="z-10">
+        <div className="z-10 ">
           {/* Logo Section - Styled for G&R Cube Look */}
             
             <div className="relative w-49 h-16 p-28">
@@ -112,15 +113,16 @@ export default function LoginPage() {
                  alt="G&R Custom Elevator Cabs Logo"
                  fill
                  className="object-contain"
+                 style={{ filter: 'drop-shadow(0 0 40px rgba(8, 194, 241, 0.58))' }}
                  priority
                />
             </div>
           
           
-          <div className="max-w-md">
+          <div className="min-w-md">
             {/* 3. Updated Main Heading Text */}
             <h1 className="text-4xl font-extrabold mb-4 tracking-tight leading-tight">
-              Welcome to the G&R Control Hub
+              Welcome to the G&R Control Hub 
             </h1>
 
             <p className="text-lg text-cyan-100/90 mb-8 leading-relaxed">
@@ -156,10 +158,11 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT PANEL - Login form */}
-      <div className="md:w-1/2 flex items-center justify-center p-8 md:p-12 bg-white">
+      <div className="md:w-1/2 flex items-center justify-center p-8 md:p-12 bg-gradient-to-br from-white via-blue-200 to-blue-100">
+
         <div className="w-full max-w-md">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Sign in</h2>
+            <h2 className="text-5xl font-bold text-gray-800 mb-2">Sign in</h2>
             {/* Corrected branding */}
             <p className="text-gray-600">Access your G&R Control Hub</p> 
           </div>

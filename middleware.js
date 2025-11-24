@@ -1,25 +1,25 @@
 // middleware.js
-// import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-// export function middleware(request) {
-//   const token = request.cookies.get('auth-token')?.value;
+export function middleware(request) {
+  const token = request.cookies.get('auth-token')?.value;
 
-//   const publicPaths = ['/'];
+  const publicPaths = ['/'];
 
-//   const isPublic = publicPaths.includes(request.nextUrl.pathname);
+  const isPublic = publicPaths.includes(request.nextUrl.pathname);
 
-//   if (!token && !isPublic) {
-//     return NextResponse.redirect(new URL('/', request.url));
-//   }
+  if (!token && !isPublic) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 
-//   return NextResponse.next();
-// }
-
-// export const config = {
-//   matcher: ['/((?!_next/static|favicon.ico).*)'],
-// };
-export function middleware() {
-  return;
+  return NextResponse.next();
 }
 
-export const config = {};
+export const config = {
+  matcher: ['/((?!_next/static|favicon.ico).*)'],
+};
+// export function middleware() {
+//   return;
+// }
+
+// export const config = {};
