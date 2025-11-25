@@ -18,8 +18,4 @@ export function middleware(request) {
 export const config = {
   matcher: ['/((?!_next/static|favicon.ico).*)'],
 };
-// export function middleware() {
-//   return;
-// }
 
-// export const config = {};

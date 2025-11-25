@@ -12,9 +12,11 @@ export const metadata = {
 };
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body className="min-h-screen bg-white">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

@@ -2,21 +2,35 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+//this is a box that will store autheniticaion information and  functions 
 const AuthContext = createContext();
+
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const router = useRouter();
 
-  // Load fake user if saved
-  useEffect(() => {
-    const storedUser = localStorage.getItem('auth-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+ // Load user on mount (ONLY if both localStorage + token exist)
+useEffect(() => {
+  const storedUser = localStorage.getItem("auth-user");
 
-  // REAL LOGIN (ONLY THIS PART CHANGED)
+  // Read token from cookie
+  const token = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("auth-token="))
+    ?.split("=")[1];
+
+  // Only authenticate if BOTH user and token exist
+  if (storedUser && token && token.trim() !== "") {
+    setUser(JSON.parse(storedUser));
+  } else {
+    // If token missing → ensure user is logged out
+    localStorage.removeItem("auth-user");
+    setUser(null);
+  }
+}, []);
+
+  // FIXED LOGIN
   const login = async ({ email, password }) => {
     try {
       const res = await fetch("http://mobileappindia.com:5001/api/v1/user/login", {
@@ -31,7 +45,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error(resData.message || "Invalid credentials");
       }
 
-      const token = resData?.data?.Token;
+      // APIS return Token
+      const token =  resData?.data?.Token;
       if (!token) {
         throw new Error("Token missing from API response");
       }
@@ -41,20 +56,24 @@ export const AuthProvider = ({ children }) => {
         email,
       };
 
+      // Save user
       localStorage.setItem("auth-user", JSON.stringify(userInfo));
-      document.cookie = `auth-token=${token}; path=/`;
+
+      // FIXED cookie (SameSite so browser doesn't block it)
+      document.cookie = `auth-token=${token}; path=/; SameSite=Lax`;
 
       setUser(userInfo);
-      router.push("/admin/dashboard");
+
+      return true; //  (let page handle redirect)
 
     } catch (error) {
       console.error("LOGIN ERROR:", error);
-      alert(error.message);
+      throw error;
     }
   };
 
   const logout = async () => {
-    document.cookie = "auth-token=; Max-Age=0; path=/";
+    document.cookie = "auth-token=; Max-Age=0; path=/;";
     localStorage.removeItem("auth-user");
     setUser(null);
     router.push("/");
