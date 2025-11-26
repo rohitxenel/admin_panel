@@ -1,6 +1,8 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
+//import { AuthProvider } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+
 
 //this is a box that will store autheniticaion information and  functions 
 const AuthContext = createContext();
@@ -80,7 +82,7 @@ useEffect(() => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout}}>
       {children}
     </AuthContext.Provider>
   );

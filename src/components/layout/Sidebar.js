@@ -100,8 +100,11 @@ export default function Sidebar({ isOpen, onClose }) {
 
             {/* Help */}
             <div className="pt-4">
-              <NavItem href="/help" label="Help & Support" Icon={FiMessageSquare} />
-            </div>
+              {/* navigate to the helpsupport page through this link  */}
+              <NavItem href="/help-support" label="Help & Support" Icon={FiMessageSquare} />
+
+
+            </div> 
 
             <div className="h-5" />
           </nav>

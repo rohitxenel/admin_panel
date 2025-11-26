@@ -37,9 +37,9 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // ✅ User is authenticated → render page
+  //  User is authenticated → render page
   if (user) return children;
 
-  // ❌ Unauthenticated (authChecked = true) → null (handled by redirect)
+  //  Unauthenticated (authChecked = true) → null (handled by redirect)
   return null;
 }

@@ -16,7 +16,7 @@ export default function GRDashboard() {
     async function loadOrders() {
       try {
         setLoading(true);
-        const res = await RecentOrder(orderLimit);
+       const res = await RecentOrder(orderLimit);//API call RecentOrder 
         if (!abort) {
           setOrders(res?.data?.data || []);
         }
