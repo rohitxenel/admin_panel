@@ -43,39 +43,39 @@ export async function ChangeStatusAccountType(id , status) {
 }
 
 
-//Vehicle Management
+// //Vehicle Management
 
-export async function GetAllVehicleData() {
-  return authorizedFetch(`/admin/get-all-vehicle`, {
-    method: 'GET',
-  });
-}
-
-
-
-export async function AddNewVehicle(data) {
-  return authorizedFetch(`/admin/add-vehicle-price`, {
-    body:JSON.stringify(data),
-    method: 'POST',
-  });
-}
+// export async function GetAllVehicleData() {
+//   return authorizedFetch(`/admin/get-all-vehicle`, {
+//     method: 'GET',
+//   });
+// }
 
 
-export async function EditVehiclePrice(data) {
-  return authorizedFetch(`/admin/edit-vehicle-price`, {
-    body:JSON.stringify(data),
-    method: 'POST',
-  });
-}
+
+// export async function AddNewVehicle(data) {
+//   return authorizedFetch(`/admin/add-vehicle-price`, {
+//     body:JSON.stringify(data),
+//     method: 'POST',
+//   });
+// }
+
+
+// export async function EditVehiclePrice(data) {
+//   return authorizedFetch(`/admin/edit-vehicle-price`, {
+//     body:JSON.stringify(data),
+//     method: 'POST',
+//   });
+// }
 
 //delete-vehicle-type
 
-export async function DeleteVehicleType(id) {
-  return authorizedFetch(`/admin/delete-vehicle-type`, {
-    body:JSON.stringify({id}),
-    method: 'POST',
-  });
-}
+// export async function DeleteVehicleType(id) {
+//   return authorizedFetch(`/admin/delete-vehicle-type`, {
+//     body:JSON.stringify({id}),
+//     method: 'POST',
+//   });
+// }
 
 
 
@@ -93,3 +93,21 @@ export async function RecentOrder(limit) {
     method: 'GET',
   });
 }
+
+// ADD CEILING IMAGE
+export async function addCeilingImage(file) {
+  const formData = new FormData();
+
+  // 👇 field name must match backend (change "image" if your API uses another key)
+  formData.append("image", file);
+
+  // If backend expects something like a type:
+  // formData.append("type", "ceiling");
+
+  return authorizedFetch("/user/add-ceiling", {
+    method: "POST",
+    body: formData, // authorizedFetch will NOT set Content-Type for FormData
+  });
+}
+
+

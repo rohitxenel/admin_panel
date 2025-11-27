@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { RecentOrder } from "@/services/admincontrol";
 import { FiActivity } from "react-icons/fi";
 
+
 export default function GRDashboard() {
   const [orders, setOrders] = useState([]);
   const [orderLimit, setOrderLimit] = useState(10);
@@ -132,9 +133,6 @@ export default function GRDashboard() {
                     <td className="px-4 py-3">{idx + 1}</td>
                     <td className="px-4 py-3">
                       {order?.userId?.name || "N/A"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {order?.driverId?.name || "Unassigned"}
                     </td>
                     <td className="px-4 py-3">
                       <span

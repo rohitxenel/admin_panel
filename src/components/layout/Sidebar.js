@@ -23,7 +23,8 @@ export default function Sidebar({ isOpen, onClose }) {
    */
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: FiBarChart2 },
-    { href: "/orders", label: "Orders", icon: FiUsers }, // Rename as needed
+    { href: "/orders", label: "Cab Styles", icon: FiUsers }, // Rename as needed
+
   ];
 
   const handleLogout = async () => {
