@@ -1,30 +1,35 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React from "react";
 import {
   FiBarChart2,
   FiUsers,
+  FiLayers,
+  FiTool,
   FiMessageSquare,
   FiLogOut,
   FiX,
+  FiGrid
 } from "react-icons/fi";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-//import Image from "next/image";
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const params = useSearchParams();
+  const section = params.get("page");
   const { logout } = useAuth();
 
   /**
    * MAIN NAVIGATION LINKS
-
-   * Dashboard + Recent Orders
    */
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: FiBarChart2 },
-    { href: "/orders", label: "Cab Styles", icon: FiUsers }, // Rename as needed
 
+    // NEW MANAGEMENT BUTTONS
+    { href: "/orders?page=ceiling", label: "Ceiling Management", icon: FiGrid},
+    { href: "/orders?page=finishes", label: "Finishes Management", icon: FiLayers },
+    { href: "/orders?page=handrail", label: "Handrail Management", icon: FiTool },
   ];
 
   const handleLogout = async () => {
@@ -36,13 +41,20 @@ export default function Sidebar({ isOpen, onClose }) {
   };
 
   const NavItem = ({ href, label, Icon }) => {
-    const active = pathname === href;
+    // Check BOTH pathname & query param for active highlighting
+    const isActive =
+      pathname === href.split("?")[0] &&
+      (section === href.split("=")[1] || (!section && href.includes("ceiling")));
 
     return (
       <a
         href={href}
         className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition
-          ${active ? "bg-white/15 text-white shadow-md" : "text-blue-100 hover:bg-white/10"}
+          ${
+            isActive
+              ? "bg-white/15 text-white shadow-md"
+              : "text-blue-100 hover:bg-white/10"
+          }
         `}
       >
         <Icon className="mr-3 text-lg" />
@@ -72,42 +84,23 @@ export default function Sidebar({ isOpen, onClose }) {
 
           {/* Header */}
           <div className="flex items-center h-20 px-4 border-b border-white/10 bg-gradient-to-r from-cyan-900 to-blue-900">
-            {/* <div className="flex items-center gap-3">  */}
-              {/* <div className="relative w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/20">
-                <Image
-                  src="/company_logo.png"
-                  alt="G&R Logo"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div> */}
-                <span className="text-4xl font-extrabold  tracking-wide text-white drop-shadow-lg">
-                G&R Admin 
-              </span>
-            {/* </div> */}
-
-            <button className="lg:hidden text-white" onClick={onClose}>
+            <span className="text-4xl font-extrabold tracking-wide text-white drop-shadow-lg">
+              G&R Admin
+            </span>
+            <button className="lg:hidden text-white ml-auto" onClick={onClose}>
               <FiX size={20} />
             </button>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-
             {navLinks.map(({ href, label, icon }) => (
               <NavItem key={href} href={href} label={label} Icon={icon} />
             ))}
 
-            {/* Help */}
-            <div className="pt-4">
-              {/* navigate to the helpsupport page through this link  */}
+            {/* <div className="pt-2">
               <NavItem href="/help-support" label="Help & Support" Icon={FiMessageSquare} />
-
-
-            </div> 
-
-            <div className="h-5" />
+            </div> */}
           </nav>
 
           {/* Logout */}

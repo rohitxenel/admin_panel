@@ -5,13 +5,13 @@ import { authorizedFetch } from '@/lib/apiClient';
 export async function getAllRide(page = null, limit = null, filter = {}) {
   const query = new URLSearchParams();
 
-  // ✅ Only include page & limit if filter is empty
+  // Only include page & limit if filter is empty
   if (Object.keys(filter).length === 0) {
     if (page) query.append("page", page);
     if (limit) query.append("limit", limit);
   }
 
-  // ✅ Pass filters as JSON string
+  //  Pass filters as JSON string
   if (Object.keys(filter).length > 0) {
     query.append("filter", JSON.stringify(filter));
   }
@@ -30,13 +30,13 @@ export async function getrideById(id) {
 export async function GetAllBusRide(page = null, limit = null, filter = {}) {
   const query = new URLSearchParams();
 
-  // ✅ Only include page & limit if filter is empty
+  //  Only include page & limit if filter is empty
   if (Object.keys(filter).length === 0) {
     if (page) query.append("page", page);
     if (limit) query.append("limit", limit);
   }
 
-  // ✅ Pass filters as JSON string
+  //  Pass filters as JSON string
   if (Object.keys(filter).length > 0) {
     query.append("filter", JSON.stringify(filter));
   }

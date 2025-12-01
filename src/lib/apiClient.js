@@ -17,15 +17,21 @@ export async function authorizedFetch(path, options = {}) {
     headers,
   });
 
-  // If the response is not JSON (e.g. empty body), handle gracefully
-  let data;
-  try {
+  // Detect JSON vs text
+  let data = null;
+  const contentType = res.headers.get("content-type");
+
+  if (contentType && contentType.includes("application/json")) {
     data = await res.json();
-  } catch {
-    data = null;
+  } else {
+    data = await res.text();
   }
 
-  if (!res.ok) throw new Error(data?.message || 'Request failed');
+  // IMPORTANT: Handle errors
+  if (!res.ok) {
+    throw new Error(data?.message || data || 'Request failed');
+  }
 
+  // IMPORTANT: Return value (your current code does NOT return anything)
   return data;
 }

@@ -93,21 +93,23 @@ export async function RecentOrder(limit) {
     method: 'GET',
   });
 }
+// GET CEILING LIST
+export async function getCeilingList() {
+  return authorizedFetch(`/user/ceiling`, {
+    method: "GET",
+  });
+}
 
 // ADD CEILING IMAGE
 export async function addCeilingImage(file) {
   const formData = new FormData();
-
-  // 👇 field name must match backend (change "image" if your API uses another key)
   formData.append("image", file);
+   formData.append("name", name);
+  formData.append("type", "ceiling");
 
-  // If backend expects something like a type:
-  // formData.append("type", "ceiling");
-
-  return authorizedFetch("/user/add-ceiling", {
+  return authorizedFetch(`/user/add-ceiling`, {
+    
     method: "POST",
-    body: formData, // authorizedFetch will NOT set Content-Type for FormData
+    body: formData,
   });
 }
-
-
