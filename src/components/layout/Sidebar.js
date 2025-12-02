@@ -6,10 +6,10 @@ import {
   FiUsers,
   FiLayers,
   FiTool,
-  FiMessageSquare,
   FiLogOut,
   FiX,
-  FiGrid
+  FiGrid,
+  FiMaximize
 } from "react-icons/fi";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -30,6 +30,7 @@ export default function Sidebar({ isOpen, onClose }) {
     { href: "/orders?page=ceiling", label: "Ceiling Management", icon: FiGrid},
     { href: "/orders?page=finishes", label: "Finishes Management", icon: FiLayers },
     { href: "/orders?page=handrail", label: "Handrail Management", icon: FiTool },
+      { href: "/orders?page=size", label: "Size Management", icon: FiMaximize },
   ];
 
   const handleLogout = async () => {

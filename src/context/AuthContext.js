@@ -32,7 +32,7 @@ useEffect(() => {
   }
 }, []);
 
-  // FIXED LOGIN
+  // LOGIN  API 
   const login = async ({ email, password }) => {
     try {
       const res = await fetch("http://mobileappindia.com:5001/api/v1/user/login", {
