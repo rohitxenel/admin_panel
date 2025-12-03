@@ -32,6 +32,6 @@ export async function authorizedFetch(path, options = {}) {
     throw new Error(data?.message || data || 'Request failed');
   }
 
-  // IMPORTANT: Return value (your current code does NOT return anything)
+  
   return data;
 }

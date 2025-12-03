@@ -34,13 +34,13 @@ import { authorizedFetch } from '@/lib/apiClient';
 // }
 
 
-export async function ChangeStatusAccountType(id , status) {
-  console.log("hiting api" , status)
-  return authorizedFetch(`/admin/change-status-account-type`, {
-    body:JSON.stringify({id , status}),
-    method: 'POST',
-  });
-}
+// export async function ChangeStatusAccountType(id , status) {
+//   console.log("hiting api" , status)
+//   return authorizedFetch(`/admin/change-status-account-type`, {
+//     body:JSON.stringify({id , status}),
+//     method: 'POST',
+//   });
+// }
 
 
 // //Vehicle Management
@@ -80,19 +80,19 @@ export async function ChangeStatusAccountType(id , status) {
 
 
 
-export async function dashboardState(scope) {
-  return authorizedFetch(`/admin/dashboard-state?scope=${scope}`, {
-    method: 'GET',
-  });
-}
+// export async function dashboardState(scope) {
+//   return authorizedFetch(`/admin/dashboard-state?scope=${scope}`, {
+//     method: 'GET',
+//   });
+// }
 
 // recent-order
 
-export async function RecentOrder(limit) {
-  return authorizedFetch(`/admin/recent-order?limit=${limit}`, {
-    method: 'GET',
-  });
-}
+// export async function RecentOrder(limit) {
+//   return authorizedFetch(`/admin/recent-order?limit=${limit}`, {
+//     method: 'GET',
+//   });
+// }
 // GET CEILING LIST
 export async function getCeilingList() {
   return authorizedFetch(`/user/ceiling`, {
@@ -177,7 +177,7 @@ export async function addCabSize(weight, dim, height, width) {
 
 // DELETE SIZE 
 export async function deleteCabSize(id) {
-  return authorizedFetch(`/user/delete-size`, {  //  endpoint i can chnage it from here  later
+  return authorizedFetch(`/user/delete`, {  //  endpoint i can chnage it from here  later
     method: "POST",
     body: JSON.stringify({ id }),
   });
