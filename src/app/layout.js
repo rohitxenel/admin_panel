@@ -7,7 +7,7 @@ export const metadata = {
   description: "Best app ever 🚀",
   icons: {
    // icon: "/Nas-Logo.svg", // <-- place your custom favicon in /public/myicon.png
-     icon: "top_logo.png",
+     icon: "fav-g.ico",
   },
 };
 export default function RootLayout({ children }) {

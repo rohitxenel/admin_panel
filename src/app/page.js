@@ -204,11 +204,11 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {/* {showPassword ? (
+                  {showPassword ? (
                     <FiEyeOff className="text-gray-400 hover:text-cyan-600" />
                   ) : (
                     <FiEye className="text-gray-400 hover:text-cyan-600" />
-                  )} */}
+                  )}
                 </button>
               </div>
             </div>

@@ -93,6 +93,13 @@ import { authorizedFetch } from '@/lib/apiClient';
 //     method: 'GET',
 //   });
 // }
+
+export async function dashboard() {
+  return authorizedFetch(`/user/dashboard`, {
+    method: "GET",
+  });
+}
+
 // GET CEILING LIST
 export async function getCeilingList() {
   return authorizedFetch(`/user/ceiling`, {
@@ -176,13 +183,20 @@ export async function addCabSize(weight, dim, height, width) {
 }
 
 // DELETE SIZE 
-export async function deleteCabSize(id) {
-  return authorizedFetch(`/user/delete`, {  //  endpoint i can chnage it from here  later
+// export async function deleteCabSize(id) {
+//   return authorizedFetch(`/user/delete`, {   
+//     method: "POST",
+//     body: JSON.stringify({ id }),
+//   });
+// }
+
+//Universal delete all the item ceiling,finishes , size management, handrail single function which manages
+export async function deleteItem(id) {
+  return authorizedFetch(`/user/delete`, {
     method: "POST",
     body: JSON.stringify({ id }),
   });
 }
-
 
 
 
