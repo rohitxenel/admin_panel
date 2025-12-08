@@ -35,7 +35,7 @@ useEffect(() => {
   // LOGIN  API 
   const login = async ({ email, password }) => {
     try {
-      const res = await fetch("http://mobileappindia.com:5001/api/v1/user/login", {
+      const res = await fetch("https://mobileappdevelopmentindia.com/elevatortoolbackend/api/v1/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
