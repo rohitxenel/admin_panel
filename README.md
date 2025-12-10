@@ -12,14 +12,7 @@ A modern, enterprise-grade admin dashboard built with **Next.js 15** and **React
 
 Perfect for teams that need centralized control over elevator cab customization workflows—from material selections to design approvals. Built with modern web technologies and best practices in mind.
 
-## ✨ Core Features
 
-### 🔐 Authentication & Security
-- JWT-based authentication with secure token management
-- Dual storage system (cookies + localStorage) for reliable session persistence
-- Automatic session validation on app initialization
-- Protected routes with automatic redirect for unauthenticated users
-- Secure cookie handling with `SameSite=Lax` protection
 
 ### 🛠️ Product Management
 - **Ceiling Management** — Upload, organize, and manage ceiling design images
@@ -52,71 +45,13 @@ Perfect for teams that need centralized control over elevator cab customization 
 | **Chart.js** | 4.5.0 | Data visualization |
 | **Next/Image** | Built-in | Optimized image rendering |
 
-## 📦 Complete Dependencies
 
-```json
-{
-  "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.1",
-    "tailwindcss": "^4.0.0",
-    "framer-motion": "^12.23.24",
-    "zustand": "^4.0.0",
-    "react-icons": "^5.5.0",
-    "chart.js": "^4.5.0",
-    "react-chartjs-2": "^5.3.0",
-    "react-apexcharts": "^1.7.0",
-    "@headlessui/react": "^2.2.7",
-    "lucide-react": "^0.542.0",
-    "lodash": "^4.17.21",
-    "libphonenumber-js": "^1.12.14",
-    "react-phone-input-2": "^2.15.1",
-    "react-phone-number-input": "^3.4.12"
-  },
-  "devDependencies": {
-    "postcss": "^8.5.3",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "15.3.1"
-  }
-}
-```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ (LTS recommended)
 - npm or yarn package manager
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/rohitxenel/admin_panel.git
-cd elevator-admin-panel
-
-# Install dependencies
-npm install
-# or
-yarn install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your API endpoints
-```
-
-### Configuration
-
-Create a `.env.local` file in the project root:
-
-```env
-# API Configuration
-NEXT_PUBLIC_API_BASE_URL=https://ec2-13-127-85-78.ap-south-1.compute.amazonaws.com/ele/api/v1
-NEXT_PUBLIC_IMAGE_URL=http://mobileappindia.com:3032/uploads
-
-# Optional: Add your custom variables
-NEXT_PUBLIC_APP_NAME=G&R Control Hub
-```
 
 ### Run the Application
 
@@ -134,7 +69,6 @@ npm start
 npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser. The app will automatically reload as you make changes.
 
 ## 📁 Project Structure
 
@@ -205,113 +139,6 @@ elevator-admin-panel/
 7. Unauth users redirected to /
 ```
 
-## 📡 API Integration
-
-### Base URL
-```
-https://ec2-13-127-85-78.ap-south-1.compute.amazonaws.com/ele/api/v1
-```
-
-### Available Endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/user/login` | POST | User authentication |
-| `/user/dashboard` | GET | Dashboard statistics |
-| `/user/ceiling` | GET | List ceiling designs |
-| `/user/add-ceiling` | POST | Upload ceiling image |
-| `/user/finishes` | GET | List finish options |
-| `/user/add-finishes` | POST | Upload finish image |
-| `/user/handrail` | GET | List handrail designs |
-| `/user/add-handrail` | POST | Upload handrail images |
-| `/user/size` | GET | List cab sizes |
-| `/user/add-size` | POST | Create new size config |
-| `/user/delete` | POST | Delete item by ID |
-
-## 💻 Usage Examples
-
-### Using Authentication
-
-```javascript
-import { useAuth } from '@/context/AuthContext';
-
-export default function MyComponent() {
-  const { user, login, logout } = useAuth();
-
-  const handleLogin = async () => {
-    try {
-      await login({ email: 'admin@example.com', password: 'password' });
-      // Redirect happens automatically
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
-  };
-
-  if (!user) return <p>Please login first</p>;
-
-  return (
-    <div>
-      <p>Welcome, {user.email}</p>
-      <button onClick={logout}>Logout</button>
-    </div>
-  );
-}
-```
-
-### Making API Calls
-
-```javascript
-import { getCeilingList, addCeilingImage } from '@/services/admincontrol';
-
-// Fetch data
-const ceilings = await getCeilingList();
-
-// Upload with authorization
-const result = await addCeilingImage(file, 'Modern Ceiling');
-```
-
-### Using Zustand Store
-
-```javascript
-import { useUserStore } from '@/store/userStore';
-
-export default function UserList() {
-  const { users, setUsers, currentPage, setCurrentPage } = useUserStore();
-
-  return (
-    <div>
-      <p>Page {currentPage}</p>
-      <button onClick={() => setCurrentPage(currentPage + 1)}>
-        Next Page
-      </button>
-    </div>
-  );
-}
-```
-
-## 🎨 Customization
-
-### Update Colors
-Edit `tailwind.config.js` to customize color scheme:
-
-```javascript
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: '#your-color',
-      },
-    },
-  },
-};
-```
-
-### Change API Endpoints
-Update `src/lib/apiConfig.js`:
-
-```javascript
-export const API_BASE_URL = 'https://your-api.com/api/v1';
-```
 
 ## 📊 Performance Optimizations
 
@@ -320,112 +147,6 @@ export const API_BASE_URL = 'https://your-api.com/api/v1';
 - ✅ Efficient state management with Zustand
 - ✅ CSS Modules and Tailwind for minimal bundle size
 
-## 🐛 Troubleshooting
 
-### Issue: Authentication not persisting
 
-**Solution:** Check browser console for cookie warnings. Ensure API is returning the token in response data.
 
-### Issue: CORS errors
-
-**Solution:** Verify API endpoint in `.env.local` and ensure backend allows requests from your domain.
-
-### Issue: Images not loading
-
-**Solution:** Check `NEXT_PUBLIC_IMAGE_URL` in `.env.local` and verify images exist on the server.
-
-## 🤝 Contributing
-
-We love contributions! Help improve this project:
-
-### Step-by-Step Guide
-
-1. **Fork the Repository**
-   ```bash
-   Click "Fork" on GitHub
-   ```
-
-2. **Clone Your Fork**
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/admin_panel.git
-   cd elevator-admin-panel
-   ```
-
-3. **Create a Feature Branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   # or fix/bug-fix
-   ```
-
-4. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-5. **Make Your Changes**
-   - Write clean, readable code
-   - Follow existing code style
-   - Add comments where needed
-
-6. **Test Your Changes**
-   ```bash
-   npm run dev
-   npm run lint
-   ```
-
-7. **Commit with Clear Messages**
-   ```bash
-   git add .
-   git commit -m "feat: add new feature" 
-   # or "fix: resolve bug in sidebar"
-   ```
-
-8. **Push to Your Branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-
-9. **Open a Pull Request**
-   - Describe what your PR does
-   - Reference related issues
-   - Include screenshots if relevant
-
-### Contribution Guidelines
-
-- Follow the existing code style and structure
-- Write meaningful commit messages
-- Keep PRs focused on a single feature/fix
-- Test thoroughly before submitting
-- Update documentation as needed
-
-## 📄 License
-
-© 2025 G&R Custom Elevator Cabs. All rights reserved.
-
-## 📧 Contact & Support
-
-- **Email:** support@grandrelevatorcabs.com
-- **Issues:** [GitHub Issues](https://github.com/rohitxenel/admin_panel/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/rohitxenel/admin_panel/discussions)
-
-## 🎯 Roadmap
-
-- [ ] Multi-language support (i18n)
-- [ ] Dark mode theme
-- [ ] Advanced analytics dashboard
-- [ ] Export reports (PDF, Excel)
-- [ ] Real-time notifications
-- [ ] User role-based access control
-- [ ] Audit logging system
-- [ ] Mobile app companion
-
-## 🙏 Acknowledgments
-
-Built with modern web technologies and best practices for a production-ready admin panel experience.
-
-***
-
-**Made with ❤️ for the G&R Custom Elevator Cabs team**
-
-[1](https://img.shields.io/badge/-Next.js-blue?logo=nextjs&logoColor=white)
-[2](https://img.shields.io/badge/-React-blue?logo=react&logoColor=white)
